@@ -11,6 +11,7 @@ loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/Own_GUI/Source/GUILib
 
 -- Extra Classes
 loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/ReaperFakeRoom/Source/AudioSource.lua")()
+loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/ReaperFakeRoom/Source/CloseMic.lua")()
 
 ------------------------------------------------------------------
 -------------------- Helper Functions ----------------------------
@@ -30,6 +31,8 @@ end
 local currentProject = reaper.GetCurrentProjectInLoadSave()
 -- Msg("Reaper current project : "..currentProject)
 
+local roomMicsList = {}
+local closeMicsList = {}
 local audioSourcesList = {}
 
 
@@ -39,27 +42,32 @@ local audioSourcesList = {}
 -----------------------------------------------------
 ------------------------------------------------------
 
--- Functions for creating audio sources and tracks
+-- Functions for creating audio sources, tracks and sends
 local function CreateAudioSourcesList()
   -- new audio sources into list
   local flutes = AudioSource:New()
   flutes.position = {10,10}
   flutes.name = "Flutes"
+  flutes.mainMic = "FlutesMic"
   table.insert(audioSourcesList, flutes)
+  flutes.Ini()
   
   local clarinets = AudioSource:New()
   clarinets.position = {10,10}
   clarinets.name = "Clarinets"
+  clarinets.mainMic = "ClarinetsMic"
   table.insert(audioSourcesList, clarinets)
   
   local oboes = AudioSource:New()
   oboes.position = {10,10}
   oboes.name = "Oboes"
+  oboes.mainMic = "OboesMic"
   table.insert(audioSourcesList, oboes)
   
   local bassoons = AudioSource:New()
   bassoons.position = {10,10}
   bassoons.name = "Bassoons"
+  bassoons.mainMic = "BassoonsMic"
   table.insert(audioSourcesList, bassoons)
 end
 
@@ -94,9 +102,19 @@ local function CreateAudioSourcesFolders()
     Msg("name track "..trackName)
     Msg("track position "..reaper.GetMediaTrackInfo_Value(a.track, "IP_TRACKNUMBER"))
   end
-
-
 end
+
+local function CreateAudioSourcesSends()
+  -- each audio source will have a track with delay and reverb send to 
+  -- all mics in the room (creating fake spill/bleed)
+
+  --[OPTION : CHECKBOX FOR WHAT MICS TO SEND TO]
+  
+  -- creating sends for all room mics ()
+  -- 1st in list is ref to 
+end
+
+
 
 -- Functions for creating mics and tracks
 local function CreateRoomMicsList()
@@ -106,6 +124,15 @@ end
 
 local function CreateRoomMicsFolders()
   Msg("Creating room mics folders..")
+end
+
+local function CreateCloseMicsList()
+  Msg("Creating close mics list..")
+
+end
+
+local function CreateCloseMicsFolders()
+  Msg("Creating close mics folders..")
 end
 
 
