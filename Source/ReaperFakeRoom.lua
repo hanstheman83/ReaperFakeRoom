@@ -68,7 +68,8 @@ local function CreateAudioSourcesFolders()
   local numTracks = reaper.GetNumTracks()
   Msg("num tracks : "..numTracks)
   reaper.InsertTrackAtIndex(numTracks, false)
-  local audioSourcesTrack = reaper.GetTrack(currentProject, numTracks)
+  numTracks = numTracks + 1
+  local audioSourcesTrack = reaper.GetTrack(currentProject, numTracks - 1)
   -- 50 dark red on windows, 100 lighter red
   reaper.SetTrackColor(audioSourcesTrack, 10500)
   reaper.GetSetMediaTrackInfo_String(audioSourcesTrack, "P_NAME", "AUDIO SOURCES", true)
@@ -77,21 +78,30 @@ local function CreateAudioSourcesFolders()
   local insertedTrack
   for i = #audioSourcesList, 1, -1  do -- reversed iteration of list..
     Msg("i "..i)
-    local index = #audioSourcesList-i + 1 -- from 1 to # of items in list
+    local index = #audioSourcesList-i -- from 0 to # of items in list - 1
     Msg("index "..index)
     reaper.InsertTrackAtIndex(numTracks + index, false)  
     insertedTrack = reaper.GetTrack(currentProject, numTracks + index)
-    local nameTrack = audioSourcesList[i].name
-    Msg("Name new track "..nameTrack)
-    reaper.GetSetMediaTrackInfo_String(insertedTrack, "P_NAME", nameTrack , true)
+    audioSourcesList[i].track = insertedTrack
+    reaper.GetSetMediaTrackInfo_String(insertedTrack, "P_NAME", audioSourcesList[i].name , true)
     reaper.SetOnlyTrackSelected(insertedTrack)
-    reaper.ReorderSelectedTracks(numTracks + 1, 1) -- move up and set as child 
+    reaper.ReorderSelectedTracks(numTracks, 1) -- move up and set as child 
   end
+  -- test 
+  for i, a in ipairs(audioSourcesList) do 
+    Msg("name instrument "..a.name)
+    local returnVal, trackName = reaper.GetTrackName(a.track)
+    Msg("name track "..trackName)
+    Msg("track position "..reaper.GetMediaTrackInfo_Value(a.track, "IP_TRACKNUMBER"))
+  end
+
+
 end
 
 -- Functions for creating mics and tracks
 local function CreateRoomMicsList()
   Msg("Creating room mics list..")
+
 end
 
 local function CreateRoomMicsFolders()
@@ -151,14 +161,14 @@ local function Btn_InsertVerb()
 end
 
 local function Btn_CreateRoom()
-  -- create tracks
-  -- create Audio Sources
-  CreateAudioSources()
   -- create Room mics
   CreateRoomMics() -- take input from GUI settings..
 
   -- create Close mics
   CreateCloseMics()
+
+  -- create Audio Sources
+  CreateAudioSources()
 
 
 end
