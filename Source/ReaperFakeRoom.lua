@@ -12,6 +12,8 @@ loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/Own_GUI/Source/GUILib
 -- Extra Classes
 loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/ReaperFakeRoom/Source/AudioSource.lua")()
 loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/ReaperFakeRoom/Source/CloseMic.lua")()
+loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/ReaperFakeRoom/Source/RoomMic.lua")()
+loadfile("C:/Users/pract/Documents/Repos/ReaperPlugins/Lua/ReaperFakeRoom/Source/Room.lua")()
 
 ------------------------------------------------------------------
 -------------------- Helper Functions ----------------------------
@@ -33,8 +35,9 @@ local currentProject = reaper.GetCurrentProjectInLoadSave()
 
 local roomMicsList = {}
 local closeMicsList = {}
-local audioSourcesList = {}
+local audioSourcesList = {} -- list of AudioSource objects
 
+local defaultRoom -- room object
 
 -----------------------------------------------------
 ------------------------------------------------------
@@ -60,7 +63,7 @@ local function CreateAudioSourcesList()
   
   local oboes = AudioSource:New()
   oboes.position = {10,10}
-  oboes.name = "Oboes"
+  oboes.name = "Oboes" 
   oboes.mainMic = "OboesMic"
   table.insert(audioSourcesList, oboes)
   
@@ -120,10 +123,57 @@ end
 local function CreateRoomMicsList()
   Msg("Creating room mics list..")
 
+  -- creating tree mics..
+  local centerTreeMic = RoomMic:New()
+  centerTreeMic.name = "CenterTreeMic"
+  centerTreeMic.position = { ["x"] = defaultRoom.width/2}
+  centerTreeMic.position = { ["y"] = 11}
+  table.insert(roomMicsList, centerTreeMic)
+  
+  local leftTreeMic = RoomMic:New()
+  leftTreeMic.name = "LeftTreeMic"
+  leftTreeMic.position = { ["x"] = defaultRoom.width/2 - 1}
+  leftTreeMic.position = { ["y"] = 10}
+  table.insert(roomMicsList, leftTreeMic)
+  
+  local rightTreeMic = RoomMic:New()
+  rightTreeMic.name = "RightTreeMic"
+  rightTreeMic.position = { ["x"] = defaultRoom.width/2 + 1}
+  rightTreeMic.position = { ["y"] = 10}
+  table.insert(roomMicsList, rightTreeMic)
+  
+  -- creating outriggers 
+  local leftRigMic = RoomMic:New()
+  leftRigMic.name = "LeftRigMic"
+  leftRigMic.position = { ["x"] = defaultRoom.width/2 - 2}
+  leftRigMic.position = { ["y"] = 10}
+  table.insert(roomMicsList, leftRigMic)
+  
+  local rightRigMic = RoomMic:New()
+  rightRigMic.name = "RightRigMic"
+  rightRigMic.position = { ["x"] = defaultRoom.width/2 + 2}
+  rightRigMic.position = { ["y"] = 10}
+  table.insert(roomMicsList, rightRigMic)
+  
+  -- creating surrounds : Directed towards the walls behind the conductor, thus less direct sound.. 
+  -- could calculate the reflection time from hitting the back wall ?
+  local leftSurroundMic = RoomMic:New()
+  leftSurroundMic.name = "LeftSurroundMic"
+  leftSurroundMic.position = { ["x"] = defaultRoom.width/2 - 1} -- same width as tree
+  leftSurroundMic.position = { ["y"] = 8.2} -- 1.8 meter behind tree
+  table.insert(roomMicsList, leftSurroundMic)
+  
+  local rightSurroundMic = RoomMic:New()
+  rightSurroundMic.name = "RightSurroundMic"
+  rightSurroundMic.position = { ["x"] = defaultRoom.width/2 + 1} -- same width as tree
+  rightSurroundMic.position = { ["y"] = 8.2} -- 1.8 meter behind tree
+  table.insert(roomMicsList, rightSurroundMic)
+
 end
 
 local function CreateRoomMicsFolders()
   Msg("Creating room mics folders..")
+  
 end
 
 local function CreateCloseMicsList()
@@ -140,28 +190,34 @@ end
 
 
 
-
+------------------------------------------
 --- Functions called directly from Buttons
+local function CreateRoom()
+  defaultRoom = Room:New()
+  defaultRoom.name = "defaultRoom"
+  defaultRoom.width = 20
+  defaultRoom.depth = 50
+end
+
+local function CreateRoomMics()
+  Msg("Creating room mics")
+  CreateRoomMicsList()
+  CreateRoomMicsFolders()
+  
+end
+
+local function CreateCloseMics()
+  Msg("Creating close mics")
+  CreateCloseMicsList()
+  CreateCloseMicsFolders()
+end
+
 local function CreateAudioSources()
   Msg("creating audio sources")
   -- get positions from GUI, store in AudioSource object
   CreateAudioSourcesList()
   CreateAudioSourcesFolders()
 end
-
--- boolean reaper.ReorderSelectedTracks(integer beforeTrackIdx, integer makePrevFolder)
-
-local function CreateRoomMics()
-  Msg("Creating room mics")
-  CreateRoomMicsList()
-  CreateRoomMicsFolders()
-
-end
-
-local function CreateCloseMics()
-  Msg("Creating close mics")
-end
-
 
 
 --- Buttons' Callbacks ---
@@ -188,6 +244,8 @@ local function Btn_InsertVerb()
 end
 
 local function Btn_CreateRoom()
+  -- create room object
+  CreateRoom()
   -- create Room mics
   CreateRoomMics() -- take input from GUI settings..
 
